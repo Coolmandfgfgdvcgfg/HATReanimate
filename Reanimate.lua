@@ -152,7 +152,7 @@ local function LoopKill()
 	CurrentCharacter:BreakJoints()
 	CurrentCharacter.Humanoid.Health = 0
 
-	LastHB = game:GetService("RunService").Heartbeat:Connect(function()
+	LastHB = game:GetService("RunService").PostSimulation:Connect(function()
 		for i,v in next, CurrentCharacter:GetChildren() do
 			if v:IsA("Accessory")  then 
 				v.Handle.Velocity = Vector3.new(15,-15,-15)
@@ -188,7 +188,7 @@ local function LoopKill()
 			LastHB = nil
 		end
 
-		LastHB = game:GetService("RunService").Heartbeat:Connect(function()
+		LastHB = game:GetService("RunService").PostSimulation:Connect(function()
 			for i,v in next, CurrentCharacter:GetChildren() do
 				if v:IsA("Accessory")  then 
 					v.Handle.Velocity = Vector3.new(15,-15,-15)
@@ -239,19 +239,8 @@ local function Start()
 	CreateFakeCharacter()
 	LoopKill()
 
-	LoopConnection = game:GetService("RunService").Heartbeat:Connect(function()
-		task.spawn(CFrameFakeHats)
-
-		for Name, Hat in pairs(Hats) do
-			if CurrentCharacter:FindFirstChild(Name) then
-				local FakeHat = FakeCharacter:FindFirstChild(Hat)
-				local RealHat = CurrentCharacter:FindFirstChild(Hat)
-				local BodyPart = FakeCharacter:FindFirstChild(Name)
-				if BodyPart and RealHat and FakeHat then
-					RealHat.Handle.CFrame = BodyPart.CFrame * HatOffsets[Name]
-				end
-			end
-		end
+	LoopConnection = game:GetService("RunService").PostSimulation:Connect(function()
+		CFrameFakeHats()
 
 		if FakeCharacter:FindFirstChild("Humanoid") then
 			CurrentCamera.CameraSubject = FakeCharacter.Humanoid
