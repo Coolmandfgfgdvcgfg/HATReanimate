@@ -29,6 +29,7 @@ local CurrentHats = {} -- Don't change this, this is used later in the code
 
 -- Variables
 local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
 local Player = Players.LocalPlayer
 local CurrentCharacter = Player.Character
 local CurrentCamera = workspace.CurrentCamera
@@ -110,7 +111,18 @@ local function CreateFakeCharacter()
 			Decal.Transparency = 1
 		end
 	end
-
+	
+	UIS.InputBegan:Connect(function(Input,gp)
+		if Input.KeyCode == Enum.KeyCode.Space and not gp then
+			task.spawn(function()
+				while UIS:IsKeyDown(Enum.KeyCode.Space) do
+					FakeCharacter.Humanoid.Jump = true
+					task.wait()
+				end
+			end)
+		end
+	end)
+	
 	Player.Character = FakeCharacter
 end
 
