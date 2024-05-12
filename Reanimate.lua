@@ -141,9 +141,9 @@ local function LoopKill()
 	CurrentCharacter.Humanoid.Health = 0
 
 	LastHB = game:GetService("RunService").Heartbeat:Connect(function()
-		for i,v in next, CurrentCharacter:GetDescendants() do
-			if v:IsA("BasePart") and v.Parent:IsA("Accessory") then 
-				v.Velocity = Vector3.new(15,-15,-15)
+		for i,v in next, CurrentCharacter:GetChildren() do
+			if v:IsA("Accessory")  then 
+				v.Handle.Velocity = Vector3.new(15,-15,-15)
 			end
 		end
 	end)
@@ -177,9 +177,9 @@ local function LoopKill()
 		end
 
 		LastHB = game:GetService("RunService").Heartbeat:Connect(function()
-			for i,v in next, NewCharacter:GetDescendants() do
-				if v:IsA("BasePart") and v.Parent:IsA("Accessory") then 
-					v.Velocity = Vector3.new(15,-15,-15)
+			for i,v in next, CurrentCharacter:GetChildren() do
+				if v:IsA("Accessory")  then 
+					v.Handle.Velocity = Vector3.new(15,-15,-15)
 				end
 			end
 		end)
@@ -229,7 +229,7 @@ local function Start()
 
 	LoopConnection = game:GetService("RunService").Heartbeat:Connect(function()
 		task.spawn(CFrameFakeHats)
-		
+
 		for Name, Hat in pairs(Hats) do
 			if CurrentCharacter:FindFirstChild(Name) then
 				local FakeHat = FakeCharacter:FindFirstChild(Hat)
