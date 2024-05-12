@@ -41,8 +41,17 @@ local LastHB
 
 -- Functions
 local function CreateAlign(Part1, Part2) 
+	if Part1:FindFirstChild("Attachment") then
+		Part1:FindFirstChild("Attachment"):Destroy()
+	end
+
 	local A0 = Instance.new("Attachment")
 	A0.Parent = Part1
+
+	if Part2:FindFirstChild("Attachment") then
+		Part2:FindFirstChild("Attachment"):Destroy()
+	end
+
 	local A1 = Instance.new("Attachment")
 	A1.Parent = Part2
 
@@ -118,12 +127,19 @@ local function CFrameFakeHats()
 			end
 		end
 	end
+	for i, Hat in ipairs(CurrentCharacter:GetChildren()) do
+		if Hat:IsA("Accessory") then
+			if Hats[Hat.Name] == nil then
+				Hat.Handle.CFrame = FakeCharacter:FindFirstChild(Hat.Name).Handle.CFrame
+			end
+		end
+	end
 end
 
 local function LoopKill()
 	CurrentCharacter:BreakJoints()
 	CurrentCharacter.Humanoid.Health = 0
-	
+
 	LastHB = game:GetService("RunService").Heartbeat:Connect(function()
 		for i,v in next, CurrentCharacter:GetDescendants() do
 			if v:IsA("BasePart") and v.Parent:IsA("Accessory") then 
@@ -131,7 +147,7 @@ local function LoopKill()
 			end
 		end
 	end)
-	
+
 	for Name, Hat in pairs(Hats) do
 		if CurrentCharacter:FindFirstChild(Name) then
 			local FakeHat = FakeCharacter:FindFirstChild(Hat)
@@ -142,15 +158,24 @@ local function LoopKill()
 			end
 		end
 	end
+	for i, Hat in ipairs(CurrentCharacter:GetChildren()) do
+		if Hat:IsA("Accessory") then
+			if Hats[Hat.Name] == nil then
+				CreateAlign(Hat.Handle, FakeCharacter:FindFirstChild(Hat.Name).Handle)
+			end
+		end
+	end
 
 	CharConnection = Player.CharacterAdded:Connect(function(NewCharacter)
 		LastCameraCFrame = CurrentCamera.CFrame
 		Player.Character = FakeCharacter
 		NewCharacter.Archivable = true
+
 		if LastHB then
 			LastHB:Disconnect()
 			LastHB = nil
 		end
+
 		LastHB = game:GetService("RunService").Heartbeat:Connect(function()
 			for i,v in next, NewCharacter:GetDescendants() do
 				if v:IsA("BasePart") and v.Parent:IsA("Accessory") then 
@@ -158,7 +183,7 @@ local function LoopKill()
 				end
 			end
 		end)
-		
+
 		local OldCF
 		local LastC = CurrentCamera.CFrame
 		OldCF = CurrentCamera:GetPropertyChangedSignal("CFrame"):Connect(function()
@@ -166,17 +191,17 @@ local function LoopKill()
 			LastC = CurrentCamera.CFrame
 			OldCF:Disconnect()
 		end)
-		
+
 		CurrentCharacter = NewCharacter
 		repeat task.wait() until CurrentCharacter:FindFirstChild("Humanoid")
 		CurrentCharacter:BreakJoints()
 		CurrentCharacter.Humanoid.Health = 0
 		CurrentCamera.CFrame = LastCameraCFrame
-		
+
 		if CurrentCharacter:FindFirstChild("HumanoidRootPart") then
 			CurrentCharacter.HumanoidRootPart.Died.Volume = 0
 		end
-		
+
 		for Name, Hat in pairs(Hats) do
 			if CurrentCharacter:FindFirstChild(Name) then
 				local FakeHat = FakeCharacter:FindFirstChild(Hat)
@@ -184,6 +209,13 @@ local function LoopKill()
 				local BodyPart = FakeCharacter:FindFirstChild(Name)
 				if BodyPart and RealHat and FakeHat then
 					CreateAlign(RealHat.Handle, FakeHat.Handle)
+				end
+			end
+		end
+		for i, Hat in ipairs(CurrentCharacter:GetChildren()) do
+			if Hat:IsA("Accessory") then
+				if Hats[Hat.Name] == nil then
+					CreateAlign(Hat.Handle, FakeCharacter:FindFirstChild(Hat.Name).Handle)
 				end
 			end
 		end
@@ -196,7 +228,7 @@ local function Start()
 	LoopKill()
 
 	LoopConnection = game:GetService("RunService").Heartbeat:Connect(function()
-		CFrameFakeHats()
+		task.spawn(CFrameFakeHats)
 		
 		for Name, Hat in pairs(Hats) do
 			if CurrentCharacter:FindFirstChild(Name) then
@@ -208,11 +240,11 @@ local function Start()
 				end
 			end
 		end
-		
+
 		if FakeCharacter:FindFirstChild("Humanoid") then
 			CurrentCamera.CameraSubject = FakeCharacter.Humanoid
 		end
-		
+
 		if FakeCharacter == nil or FakeCharacter.Parent == nil then
 			LoopConnection:Disconnect()
 			CharConnection:Disconnect()
