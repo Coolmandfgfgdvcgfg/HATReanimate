@@ -83,13 +83,41 @@ local function CreateAlign(Part1, Part2)
 	Part2.Transparency = 0.8 -- So you can see the fake hats relative to the real ones incase they fall and etc
 end
 
+local function addAccessory(character, accessory)
+	local attachment = accessory.Handle:FindFirstChildOfClass("Attachment")
+	local weld = Instance.new("Weld")
+	weld.Name = "AccessoryWeld"
+	weld.Part0 = accessory.Handle
+	if attachment then
+		local other = character:FindFirstChild(tostring(attachment), true)
+		weld.C0 = attachment.CFrame
+		weld.C1 = other.CFrame
+		weld.Part1 = other.Parent
+	else
+		weld.C1 = CFrame.new(0, character.Head.Size.Y / 2, 0) * accessory.AttachmentPoint:inverse()
+		weld.Part1 = character.Head
+	end
+	accessory.Handle.CFrame = weld.Part1.CFrame * weld.C1 * weld.C0:inverse()
+	accessory.Parent = character
+	weld.Parent = accessory.Handle
+end
+
 local function CreateFakeCharacter()
 	CurrentCharacter.Archivable = true
-
-	FakeCharacter = CurrentCharacter:Clone()
+	
+	--FakeCharacter = CurrentCharacter:Clone()
+	FakeCharacter = game:GetObjects("rbxassetid://10117001961")[1]
 	FakeCharacter.Name = Player.Name .. "_Fake"
 	FakeCharacter.Parent = workspace
-
+	
+	for i, Hat in ipairs(CurrentCharacter:GetChildren()) do
+		if Hat:IsA("Accessory") then
+			local NewHat = Hat:Clone()
+			NewHat.Parent = FakeCharacter
+			addAccessory(FakeCharacter, NewHat)
+		end
+	end
+	
 	task.spawn(function()
 		for i, LS in ipairs(FakeCharacter:GetChildren()) do
 			if LS:IsA("LocalScript") then
@@ -139,13 +167,6 @@ local function CFrameFakeHats()
 			end
 		end
 	end
-	for i, Hat in ipairs(CurrentCharacter:GetChildren()) do
-		if Hat:IsA("Accessory") then
-			if Hats[Hat.Name] == nil then
-				Hat.Handle.CFrame = FakeCharacter:FindFirstChild(Hat.Name).Handle.CFrame
-			end
-		end
-	end
 end
 
 local function LoopKill()
@@ -159,7 +180,7 @@ local function LoopKill()
 			end
 		end
 	end)
-
+	
 	for Name, Hat in pairs(Hats) do
 		if CurrentCharacter:FindFirstChild(Name) then
 			local FakeHat = FakeCharacter:FindFirstChild(Hat)
@@ -231,6 +252,8 @@ local function LoopKill()
 				end
 			end
 		end
+		
+		
 		--CurrentCharacter:PivotTo(CFrame.new(0,10000,0))
 	end)
 end
@@ -241,7 +264,25 @@ local function Start()
 
 	LoopConnection = game:GetService("RunService").PostSimulation:Connect(function()
 		CFrameFakeHats()
-
+		
+		for Name, Hat in pairs(Hats) do
+			if CurrentCharacter:FindFirstChild(Name) then
+				local FakeHat = FakeCharacter:FindFirstChild(Hat)
+				local RealHat = CurrentCharacter:FindFirstChild(Hat)
+				local BodyPart = FakeCharacter:FindFirstChild(Name)
+				if BodyPart and RealHat and FakeHat then
+					RealHat.Handle.CFrame = FakeHat.Handle.CFrame
+				end
+			end
+		end
+		for i, Hat in ipairs(CurrentCharacter:GetChildren()) do
+			if Hat:IsA("Accessory") then
+				if Hats[Hat.Name] == nil then
+					Hat.Handle.CFrame = FakeCharacter:FindFirstChild(Hat.Name).Handle.CFrame
+				end
+			end
+		end
+		
 		if FakeCharacter:FindFirstChild("Humanoid") then
 			CurrentCamera.CameraSubject = FakeCharacter.Humanoid
 		end
